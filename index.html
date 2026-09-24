@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>家庭點數與獎勵系統</title>
+  <style>
+    :root {
+      --bg-color: #f7f5f0;
+      --card-bg: #ffffff;
+      --text-main: #4a4643;
+      --text-sub: #8c857b;
+      --primary-color: #7f6b5d;
+      --primary-hover: #675549;
+      --accent-color: #c86d51;
+      --success-color: #5b8c5a;
+      --card-border: #e6e2d8;
+      --shadow: 0 4px 12px rgba(0,0,0,0.04);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", "PingFang TC", "Microsoft JhengHei", sans-serif;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      padding: 20px 16px 60px;
+      max-width: 480px;
+      margin: 0 auto;
+      line-height: 1.5;
+    }
+
+    /* 頂部導覽列 */
+    .top-bar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+
+    .user-info-tag {
+      font-size: 13px;
+      color: var(--text-sub);
+      background: var(--card-bg);
+      padding: 6px 14px;
+      border-radius: 20px;
+      border: 1px solid var(--card-border);
+      box-shadow: var(--shadow);
+    }
+
+    .btn-link {
+      font-size: 13px;
+      color: var(--primary-color);
+      background: none;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+    }
+
+    /* 卡片通用樣式 */
+    .card {
+      background: var(--card-bg);
+      border-radius: 16px;
+      padding: 20px;
+      box-shadow: var(--shadow);
+      margin-bottom: 20px;
+      border: 1px solid var(--card-border);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .card-title {
+      font-size: 14px;
+      color: var(--text-sub);
+      letter-spacing: 1px;
+    }
+
+    .points-display {
+      text-align: center;
+      padding: 10px 0;
+    }
+
+    .points-value {
+      font-size: 48px;
+      font-weight: 700;
+      color: var(--primary-color);
+      line-height: 1.1;
+    }
+
+    .points-unit {
+      font-size: 14px;
+      color: var(--text-sub);
+      margin-left: 4px;
+    }
+
+    /* 表單與輸入框 */
+    label {
+      display: block;
+      font-size: 12px;
+      color: var(--text-sub);
+      margin-bottom: 6px;
+    }
+
+    input, select {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      font-size: 14px;
+      outline: none;
+      background-color: #faf9f6;
+      color: var(--text-main);
+      margin-bottom: 12px;
+    }
+
+    input:focus, select:focus {
+      border-color: var(--primary-color);
+      background-color: #fff;
+    }
+
+    /* 按鈕樣式 */
+    .btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: #fff;
+    }
+
+    .btn-primary:active {
+      background-color: var(--primary-hover);
+      transform: scale(0.98);
+    }
+
+    .btn-accent {
+      background-color: var(--accent-color);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      background-color: #eae5dc;
+      color: var(--text-main);
+    }
+
+    /* 快速扣點項目網格 */
+    .preset-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 10px;
+      margin-bottom: 12px;
+    }
+
+    .preset-item {
+      background: #faf8f5;
+      border: 1px solid var(--card-border);
+      border-radius: 10px;
+      padding: 12px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .preset-item:hover {
+      border-color: var(--primary-color);
+      background-color: #fff;
+    }
+
+    .preset-name {
+      font-size: 13px;
+      font-weight: 500;
+      margin-bottom: 4px;
+    }
+
+    .preset-cost {
+      font-size: 12px;
+      color: var(--accent-color);
+      font-weight: 600;
+    }
+
+    /* 拉霸機專區 */
+    .slot-machine {
+      text-align: center;
+    }
+
+    .slot-display {
+      background: #faf8f5;
+      border: 2px solid var(--card-border);
+      border-radius: 12px;
+      height: 70px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 14px;
+      font-size: 22px;
+      font-weight: 700;
+      color: var(--primary-color);
+      letter-spacing: 2px;
+    }
+
+    /* 願望卡與清單 */
+    .wish-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 12px;
+      background: #faf8f5;
+      border-radius: 10px;
+      border: 1px solid var(--card-border);
+      margin-bottom: 8px;
+    }
+
+    .wish-info .title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .wish-info .desc {
+      font-size: 12px;
+      color: var(--text-sub);
+    }
+
+    .btn-sm {
+      padding: 6px 12px;
+      font-size: 12px;
+      width: auto;
+    }
+
+    /* 歷史紀錄 */
+    .history-list {
+      list-style: none;
+      max-height: 250px;
+      overflow-y: auto;
+    }
+
+    .history-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 10px 0;
+      border-bottom: 1px solid #f0ece3;
+    }
+
+    .history-item:last-child {
+      border-bottom: none;
+    }
+
+    .history-reason {
+      font-size: 13px;
+      font-weight: 500;
+    }
+
+    .history-date {
+      font-size: 11px;
+      color: var(--text-sub);
+    }
+
+    .amount-minus {
+      color: var(--accent-color);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    .amount-plus {
+      color: var(--success-color);
+      font-weight: 600;
+      font-size: 14px;
+    }
+
+    /* 彈窗 Modal */
+    .modal-overlay {
+      position: fixed;
+      top:0; left:0; right:0; bottom:0;
+      background: rgba(0,0,0,0.35);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    .modal-card {
+      background: #fff;
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      max-width: 380px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+    }
+
+    .hidden {
+      display: none !important;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 頂部資訊欄 -->
+  <div class="top-bar">
+    <div class="user-info-tag" id="currentUserTag">身份：訪客</div>
+    <button class="btn-link" id="authBtn" onclick="openLoginModal()">登入 / 註冊</button>
+  </div>
+
+  <!-- 消費者前台介面 -->
+  <div id="userPanel">
+    <!-- 點數卡片 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">當前剩餘點數</span>
+        <button class="btn-link" onclick="dailyCheckIn()">📅 每日簽到 (+5pt)</button>
+      </div>
+      <div class="points-display">
+        <span class="points-value" id="userPoints">0</span>
+        <span class="points-unit">PT</span>
+      </div>
+    </div>
+
+    <!-- 幸運拉霸機 -->
+    <div class="card slot-machine">
+      <div class="card-header">
+        <span class="card-title">🎰 幸運拉霸抽獎</span>
+        <span style="font-size:12px; color:var(--text-sub);">每次 10 點</span>
+      </div>
+      <div class="slot-display" id="slotDisplay">❓ 點擊抽獎 ❓</div>
+      <button class="btn btn-accent" onclick="playSlot()">開始抽獎 (-10pt)</button>
+    </div>
+
+    <!-- 快速扣點區 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🛍️ 快速選擇扣點</span>
+      </div>
+      <div class="preset-grid" id="presetContainer">
+        <!-- 動態渲染快速扣點項目 -->
+      </div>
+
+      <label for="customReason">自訂扣點原因</label>
+      <input type="text" id="customReason" placeholder="例如：請老婆喝奶茶">
+
+      <label for="customAmount">自訂扣點數值</label>
+      <input type="number" id="customAmount" placeholder="例如：30">
+
+      <button class="btn btn-primary" onclick="deductCustomPoints()">確認自訂扣點</button>
+    </div>
+
+    <!-- 許願池兌換 -->
+    <div class="card">
+      <div class="card-header">
+        <span class="card-title">🌟 許願池卡片兌換</span>
+      </div>
+      <div class="wish-item">
+        <div class="wish-info">
+          <div class="title">免死金牌卡</div>
+          <div class="desc">抵扣一次小過錯或不做家事</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="redeemWish('免死金牌卡', 100)">100pt 兌換</button>
+      </div>
+      <div class="wish-item">
+        <div class="wish-info">
+          <div class="title">專屬按摩 15 分鐘</div>
+          <div class="desc">享受肩頸放鬆按摩</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="redeemWish('專屬按摩15分鐘', 150)">150pt 兌換</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 管理者後台 -->
+  <div id="adminPanel" class="card hidden" style="border: 2px solid var(--primary-color);">
+    <div class="card-header">
+      <span class="card-title" style="color:var(--primary-color); font-weight:bold;">👑 管理者後台 (Nancy)</span>
+      <button class="btn-link" onclick="exitAdmin()">退出後台</button>
+    </div>
+
+    <!-- 會員點數儲值與扣除 -->
+    <div style="margin-bottom: 20px;">
+      <label for="adminUserSelect">選擇要管理的會員</label>
+      <select id="adminUserSelect"></select>
+
+      <label for="adminAmount">調整點數 (正數為儲值，負數為扣點)</label>
+      <input type="number" id="adminAmount" placeholder="例如：100 或 -20">
+
+      <label for="adminNote">備註 / 原因</label>
+      <input type="text" id="adminNote" placeholder="例如：幫忙摺衣服獎勵">
+
+      <button class="btn btn-primary" onclick="adminAdjustPoints()">確認更新會員點數</button>
+    </div>
+
+    <hr style="border:none; border-top:1px solid var(--card-border); margin:15px 0;">
+
+    <!-- 管理扣點選項 -->
+    <div>
+      <label for="newPresetName">新增預設扣點項目名稱</label>
+      <input type="text" id="newPresetName" placeholder="例如：買小零食">
+
+      <label for="newPresetCost">扣除點數</label>
+      <input type="number" id="newPresetCost" placeholder="例如：15">
+
+      <button class="btn btn-secondary" onclick="addPresetOption()">新增扣點項目</button>
+    </div>
+  </div>
+
+  <!-- 歷史紀錄卡片 -->
+  <div class="card">
+    <div class="card-header">
+      <span class="card-title">📜 點數歷史明細</span>
+    </div>
+    <ul class="history-list" id="historyList">
+      <!-- 動態載入歷史紀錄 -->
+    </ul>
+  </div>
+
+  <!-- 登入 / 註冊 彈窗 Modal -->
+  <div class="modal-overlay hidden" id="loginModal">
+    <div class="modal-card">
+      <div style="display:flex; justify-content:space-between; margin-bottom:15px;">
+        <h3 id="modalTitle">會員登入</h3>
+        <button class="btn-link" onclick="closeLoginModal()">✕ 關閉</button>
+      </div>
+
+      <label for="inputName">名字</label>
+      <input type="text" id="inputName" placeholder="請輸入名字">
+
+      <label for="inputPassword">密碼</label>
+      <input type="password" id="inputPassword" placeholder="請輸入密碼">
+
+      <div id="jobField" style="display:none;">
+        <label for="inputJob">職業 (僅註冊時填寫)</label>
+        <input type="text" id="inputJob" placeholder="例如：工程師、神隊友老公">
+      </div>
+
+      <button class="btn btn-primary" style="margin-top:10px;" onclick="handleAuth()">確認</button>
+      <div style="text-align:center; margin-top:12px;">
+        <button class="btn-link" id="toggleAuthModeBtn" onclick="toggleAuthMode()">沒有帳號？點此註冊新會員</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // --- 資料初始化 ---
+    let users = JSON.parse(localStorage.getItem('muji_users')) || {};
+    let presetOptions = JSON.parse(localStorage.getItem('muji_presets')) || [
+      { name: '看電視 1 小時', cost: 10 },
+      { name: '打電動 2 小時', cost: 20 },
+      { name: '買小零食', cost: 15 }
+    ];
+    let historyLogs = JSON.parse(localStorage.getItem('muji_history')) || [];
+    let currentUser = localStorage.getItem('muji_current_user') || null;
+    let isRegisterMode = false;
+
+    // --- 頁面載入執行 ---
+    window.onload = function() {
+      renderPresets();
+      updateUI();
+    };
+
+    // --- UI 渲染邏輯 ---
+    function updateUI() {
+      const userTag = document.getElementById('currentUserTag');
+      const authBtn = document.getElementById('authBtn');
+      const userPanel = document.getElementById('userPanel');
+      const adminPanel = document.getElementById('adminPanel');
+
+      if (currentUser === 'Nancy') {
+        userTag.innerText = '👑 管理者：Nancy';
+        authBtn.innerText = '登出';
+        userPanel.classList.add('hidden');
+        adminPanel.classList.remove('hidden');
+        populateAdminUserSelect();
+      } else if (currentUser && users[currentUser]) {
+        userTag.innerText = `👤 會員：${currentUser} (${users[currentUser].job || '一般會員'})`;
+        authBtn.innerText = '登出';
+        userPanel.classList.remove('hidden');
+        adminPanel.classList.add('hidden');
+        document.getElementById('userPoints').innerText = users[currentUser].points;
+      } else {
+        userTag.innerText = '身份：訪客 (請先登入)';
+        authBtn.innerText = '登入 / 註冊';
+        userPanel.classList.remove('hidden');
+        adminPanel.classList.add('hidden');
+        document.getElementById('userPoints').innerText = 0;
+      }
+
+      renderHistory();
+    }
+
+    // 渲染預設扣點項目
+    function renderPresets() {
+      const container = document.getElementById('presetContainer');
+      container.innerHTML = '';
+      presetOptions.forEach(opt => {
+        const div = document.createElement('div');
+        div.className = 'preset-item';
+        div.onclick = () => deductPresetPoints(opt.name, opt.cost);
+        div.innerHTML = `
+          <div class="preset-name">${opt.name}</div>
+          <div class="preset-cost">-${opt.cost} PT</div>
+        `;
+        container.appendChild(div);
+      });
+    }
+
+    // 渲染歷史明細
+    function renderHistory() {
+      const list = document.getElementById('historyList');
+      list.innerHTML = '';
+      
+      const filteredLogs = currentUser === 'Nancy' 
+        ? historyLogs 
+        : historyLogs.filter(log => log.user === currentUser);
+
+      if (filteredLogs.length === 0) {
+        list.innerHTML = '<li style="text-align:center; color:var(--text-sub); padding:15px; font-size:13px;">尚無點數紀錄</li>';
+        return;
+      }
+
+      filteredLogs.slice().reverse().forEach(log => {
+        const li = document.createElement('li');
+        li.className = 'history-item';
+        const isPlus = log.amount > 0;
+        li.innerHTML = `
+          <div>
+            <div class="history-reason">${log.user !== currentUser ? `[${log.user}] ` : ''}${log.reason}</div>
+            <div class="history-date">${log.date}</div>
+          </div>
+          <div class="${isPlus ? 'amount-plus' : 'amount-minus'}">
+            ${isPlus ? '+' : ''}${log.amount} PT
+          </div>
+        `;
+        list.appendChild(li);
+      });
+    }
+
+    // --- 扣點與儲值核心邏輯 ---
+    function deductPresetPoints(name, cost) {
+      if (!checkUserLoggedIn()) return;
+      if (users[currentUser].points < cost) {
+        alert('點數不足！請找 Nancy 儲值～');
+        return;
+      }
+      users[currentUser].points -= cost;
+      addHistory(currentUser, `消費：${name}`, -cost);
+      saveData();
+      updateUI();
+    }
+
+    function deductCustomPoints() {
+      if (!checkUserLoggedIn()) return;
+      const reason = document.getElementById('customReason').value.trim();
+      const amount = parseInt(document.getElementById('customAmount').value);
+
+      if (!reason || isNaN(amount) || amount <= 0) {
+        alert('請輸入正確的扣點原因與數值！');
+        return;
+      }
+      if (users[currentUser].points < amount) {
+        alert('點數不足！請找 Nancy 儲值～');
+        return;
+      }
+
+      users[currentUser].points -= amount;
+      addHistory(currentUser, `自訂消費：${reason}`, -amount);
+      document.getElementById('customReason').value = '';
+      document.getElementById('customAmount').value = '';
+      saveData();
+      updateUI();
+    }
+
+    // --- 幸運拉霸機邏輯 ---
+    function playSlot() {
+      if (!checkUserLoggedIn()) return;
+      if (users[currentUser].points < 10) {
+        alert('點數不足 10 點，無法參與抽獎！');
+        return;
+      }
+
+      users[currentUser].points -= 10;
+
+      const prizes = [
+        { text: '🌟 加 30 點！', value: 30 },
+        { text: '🎉 加 10 點！', value: 10 },
+        { text: '😄 加 5 點！', value: 5 },
+        { text: '😐 0 點 (沒中)', value: 0 },
+        { text: '💔 扣 5 點', value: -5 },
+        { text: '💣 扣 10 點', value: -10 }
+      ];
+
+      const display = document.getElementById('slotDisplay');
+      let count = 0;
+      const timer = setInterval(() => {
+        const randomTemp = prizes[Math.floor(Math.random() * prizes.length)];
+        display.innerText = randomTemp.text;
+        count++;
+        if (count > 12) {
+          clearInterval(timer);
+          const finalPrize = prizes[Math.floor(Math.random() * prizes.length)];
+          display.innerText = finalPrize.text;
+          
+          const netChange = finalPrize.value - 10;
+          users[currentUser].points += finalPrize.value;
+          
+          addHistory(currentUser, `拉霸抽獎結果：${finalPrize.text}`, netChange);
+          saveData();
+          updateUI();
+        }
+      }, 100);
+    }
+
+    // --- 每日簽到 (固定獲得 5 點) ---
+    function dailyCheckIn() {
+      if (!checkUserLoggedIn()) return;
+      const today = new Date().toLocaleDateString();
+      if (users[currentUser].lastCheckIn === today) {
+        alert('今天已經簽到過了，明天再來吧！');
+        return;
+      }
+      const reward = 5; // 固定 5 點
+      users[currentUser].points += reward;
+      users[currentUser].lastCheckIn = today;
+      addHistory(currentUser, `每日簽到獎勵`, reward);
+      saveData();
+      updateUI();
+      alert(`🎉 簽到成功！獲得 ${reward} 點！`);
+    }
+
+    // --- 願望卡兌換 ---
+    function redeemWish(title, cost) {
+      if (!checkUserLoggedIn()) return;
+      if (users[currentUser].points < cost) {
+        alert('點數不足，無法兌換！');
+        return;
+      }
+      if (confirm(`確定要花費 ${cost} 點兌換「${title}」嗎？`)) {
+        users[currentUser].points -= cost;
+        addHistory(currentUser, `兌換願望：${title}`, -cost);
+        saveData();
+        updateUI();
+        alert(`🎉 成功兌換「${title}」！已送出申請給 Nancy。`);
+      }
+    }
+
+    // --- 管理者後台邏輯 ---
+    function populateAdminUserSelect() {
+      const select = document.getElementById('adminUserSelect');
+      select.innerHTML = '';
+      Object.keys(users).forEach(uname => {
+        const opt = document.createElement('option');
+        opt.value = uname;
+        opt.innerText = `${uname} (當前: ${users[uname].points} pt)`;
+        select.appendChild(opt);
+      });
+    }
+
+    function adminAdjustPoints() {
+      const uname = document.getElementById('adminUserSelect').value;
+      const amount = parseInt(document.getElementById('adminAmount').value);
+      const note = document.getElementById('adminNote').value.trim() || '管理者調整';
+
+      if (!uname || isNaN(amount)) {
+        alert('請選擇會員並輸入正確的點數！');
+        return;
+      }
+
+      users[uname].points += amount;
+      addHistory(uname, `[Nancy 調整] ${note}`, amount);
+      document.getElementById('adminAmount').value = '';
+      document.getElementById('adminNote').value = '';
+      saveData();
+      populateAdminUserSelect();
+      renderHistory();
+      alert(`已成功更新 ${uname} 的點數！`);
+    }
+
+    function addPresetOption() {
+      const name = document.getElementById('newPresetName').value.trim();
+      const cost = parseInt(document.getElementById('newPresetCost').value);
+
+      if (!name || isNaN(cost) || cost <= 0) {
+        alert('請輸入正確的項目名稱與扣點數值！');
+        return;
+      }
+
+      presetOptions.push({ name, cost });
+      localStorage.setItem('muji_presets', JSON.stringify(presetOptions));
+      document.getElementById('newPresetName').value = '';
+      document.getElementById('newPresetCost').value = '';
+      renderPresets();
+      alert(`已成功新增扣點項目「${name}」！`);
+    }
+
+    function exitAdmin() {
+      currentUser = null;
+      localStorage.removeItem('muji_current_user');
+      updateUI();
+    }
+
+    // --- 驗證與紀錄輔助函式 ---
+    function checkUserLoggedIn() {
+      if (!currentUser) {
+        openLoginModal();
+        return false;
+      }
+      return true;
+    }
+
+    function addHistory(user, reason, amount) {
+      const now = new Date();
+      const timeStr = `${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+      historyLogs.push({ user, reason, amount, date: timeStr });
+    }
+
+    function saveData() {
+      localStorage.setItem('muji_users', JSON.stringify(users));
+      localStorage.setItem('muji_history', JSON.stringify(historyLogs));
+    }
+
+    // --- 彈窗 Modal 控制 ---
+    function openLoginModal() {
+      if (currentUser) {
+        currentUser = null;
+        localStorage.removeItem('muji_current_user');
+        updateUI();
+        return;
+      }
+      document.getElementById('loginModal').classList.remove('hidden');
+    }
+
+    function closeLoginModal() {
+      document.getElementById('loginModal').classList.add('hidden');
+    }
+
+    function toggleAuthMode() {
+      isRegisterMode = !isRegisterMode;
+      document.getElementById('modalTitle').innerText = isRegisterMode ? '註冊新會員' : '會員登入';
+      document.getElementById('jobField').style.display = isRegisterMode ? 'block' : 'none';
+      document.getElementById('toggleAuthModeBtn').innerText = isRegisterMode ? '已有帳號？點此登入' : '沒有帳號？點此註冊新會員';
+    }
+
+    function handleAuth() {
+      const name = document.getElementById('inputName').value.trim();
+      const pwd = document.getElementById('inputPassword').value.trim();
+      const job = document.getElementById('inputJob').value.trim();
+
+      if (!name || !pwd) {
+        alert('請輸入名字與密碼！');
+        return;
+      }
+
+      // 管理者 Nancy 驗證
+      if (name === 'Nancy' && pwd === 'ning') {
+        currentUser = 'Nancy';
+        localStorage.setItem('muji_current_user', 'Nancy');
+        closeLoginModal();
+        updateUI();
+        return;
+      }
+
+      if (isRegisterMode) {
+        // 註冊流程
+        if (users[name]) {
+          alert('該名字已被註冊，請直接登入！');
+          return;
+        }
+        users[name] = { password: pwd, job: job || '神隊友', points: 100, lastCheckIn: '' };
+        addHistory(name, '新會員註冊贈送初始點數', 100);
+        currentUser = name;
+        saveData();
+        localStorage.setItem('muji_current_user', name);
+        alert('🎉 註冊成功！獲得初始點數 100 點！');
+      } else {
+        // 登入流程
+        if (!users[name] || users[name].password !== pwd) {
+          alert('名字或密碼錯誤，請重新確認！');
+          return;
+        }
+        currentUser = name;
+        localStorage.setItem('muji_current_user', name);
+      }
+
+      closeLoginModal();
+      updateUI();
+    }
+  </script>
+</body>
+</html>
